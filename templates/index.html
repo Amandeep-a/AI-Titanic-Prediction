@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Powered Survival Prediction System</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>AI Survival Predictor</h1>
+            <p>Advanced Titanic Passenger Analysis & Prediction System</p>
+        </header>
+
+        <section class="stats-grid">
+            <div class="stat-card">
+                <h3>Total Passengers</h3>
+                <p>{{ stats.total }}</p>
+            </div>
+            <div class="stat-card">
+                <h3>Survival Rate</h3>
+                <p>{{ stats.survived_rate }}%</p>
+            </div>
+            <div class="stat-card">
+                <h3>Males</h3>
+                <p>{{ stats.male_count }}</p>
+            </div>
+            <div class="stat-card">
+                <h3>Females</h3>
+                <p>{{ stats.female_count }}</p>
+            </div>
+        </section>
+
+        <nav class="tabs">
+            <button class="tab-btn active" data-tab="single-prediction">Single Prediction</button>
+            <button class="tab-btn" data-tab="batch-prediction">Batch Processing</button>
+            <button class="tab-btn" data-tab="analytics">Analytics Dashboard</button>
+        </nav>
+
+        <!-- Single Prediction Tab -->
+        <div id="single-prediction" class="tab-content active">
+            <div class="grid-2-cols">
+                <div class="form-card">
+                    <form id="predict-form">
+                        <div class="form-group">
+                            <label>Passenger Class (Pclass)</label>
+                            <select name="pclass" required>
+                                <option value="1">1st Class (Elite)</option>
+                                <option value="2">2nd Class (Middle)</option>
+                                <option value="3" selected>3rd Class (Economy)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Sex</label>
+                            <select name="sex" required>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Age</label>
+                            <input type="number" name="age" value="25" min="0" max="100" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Fare (Ticket Price)</label>
+                            <input type="number" name="fare" value="32" step="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label>SibSp (Siblings/Spouse)</label>
+                            <input type="number" name="sibsp" value="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Parch (Parents/Children)</label>
+                            <input type="number" name="parch" value="0" min="0">
+                        </div>
+                        <button type="submit" class="btn-predict">Analyze Survival Chances</button>
+                    </form>
+                </div>
+
+                <div id="prediction-result-container" class="form-card" style="display:flex; flex-direction:column; justify-content:center;">
+                    <div id="predict-spinner" class="spinner"></div>
+                    <div id="prediction-result">
+                        <p style="color: var(--text-muted);">Enter passenger details to run the AI model.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Batch Prediction Tab -->
+        <div id="batch-prediction" class="tab-content">
+            <div class="form-card">
+                <h3>Batch Prediction (CSV Upload)</h3>
+                <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Upload a CSV file containing Titanic passenger data for bulk prediction.</p>
+                <form id="batch-form">
+                    <div class="form-group">
+                        <input type="file" id="csv-file" accept=".csv" required>
+                    </div>
+                    <button type="submit" class="btn-predict">Run Batch Analysis</button>
+                </form>
+                <div id="batch-result" style="margin-top: 2rem;"></div>
+            </div>
+        </div>
+
+        <!-- Analytics Tab -->
+        <div id="analytics" class="tab-content">
+            <div class="grid-2-cols">
+                <div class="chart-container">
+                    <h3>Survival Rate by Gender</h3>
+                    <canvas id="genderChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3>Survival Probability by Class</h3>
+                    <canvas id="classChart"></canvas>
+                </div>
+                <div class="chart-container chart-wide">
+                    <h3>Age Distribution of Passengers</h3>
+                    <canvas id="ageChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Chatbot -->
+    <div class="chatbot-toggle" id="chat-toggle">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+    </div>
+    <div class="chat-window" id="chat-window">
+        <div class="chat-header">AI Assistant</div>
+        <div class="chat-messages" id="chat-messages">
+            <div class="msg bot">Hello! I'm your Titanic AI assistant. Ask me anything about the model or dataset.</div>
+        </div>
+        <form class="chat-input-area" id="chat-form">
+            <input type="text" class="chat-input" placeholder="Type a message..." id="chat-input">
+            <button type="submit" style="background:none; border:none; cursor:pointer;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            </button>
+        </form>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
